@@ -1,0 +1,39 @@
+
+@main {
+
+  <h1>Play Chat</h1>
+
+  <table>
+    <tr>
+      <td>名前</td>
+      <td>部屋</td>
+    </tr>
+    <tr>
+      <td><input type="text" id="user" /></td>
+      <td>
+        <select id="room">
+          <option value="0">A</option>
+          <option value="1">B</option>
+          <option value="2">C</option>
+        </select>
+      </td>
+    </tr>
+  </table>
+
+  <button type="button" id="entry">入場</button>
+
+  <br />
+  <br />
+
+  <hr />
+  <input type="text" id="speech" />
+  <button type="button" id="send">送信</button>
+  <button type="button" id="leave">退出</button>
+  <hr />
+
+  <div class="talk"></div>
+
+
+  <script src="@routes.Assets.versioned("javascripts/chat.js")" type="text/javascript"></script>
+
+}
