@@ -14,20 +14,16 @@ import scala.concurrent.duration._
 
 case class Room(roomId: String, bus: Flow[Message, Message, UniqueKillSwitch])
 
-case class Channel(sink : Sink[Message, NotUsed], source: Source[Message, NotUsed])
-
 @Singleton
 class RoomClient @Inject()(implicit val materializer: Materializer, implicit val system: ActorSystem) {
 
-  import RoomClient._
-
   def chatRoom(roomId: String): Room = synchronized {
-    roomPool.get.get(roomId) match {
+    RoomClient.roomPool.get.get(roomId) match {
       case Some(room) =>
         room
       case None =>
         val room = create(roomId)
-        roomPool.get() += (roomId -> room)
+        RoomClient.roomPool.get() += (roomId -> room)
         room
     }
   }
@@ -38,12 +34,10 @@ class RoomClient @Inject()(implicit val materializer: Materializer, implicit val
       MergeHub.source[Message](perProducerBufferSize = 16)
           .toMat(BroadcastHub.sink(bufferSize = 256))(Keep.both)
           .run()
-
+          
     source.runWith(Sink.ignore)
 
-    val channel = Channel(sink, source)
-
-    val bus: Flow[Message, Message, UniqueKillSwitch] = Flow.fromSinkAndSource(channel.sink, channel.source)
+    val bus = Flow.fromSinkAndSource(sink, source)
         .joinMat(KillSwitches.singleBidi[Message, Message])(Keep.right)
         .backpressureTimeout(3.seconds)
 
@@ -53,8 +47,6 @@ class RoomClient @Inject()(implicit val materializer: Materializer, implicit val
 
 object RoomClient {
   
-//  private var rooms: MutableMap[String, Room] = MutableMap()
-
-  val roomPool: AtomicReference[MutableMap[String, Room]] = new AtomicReference[MutableMap[String, Room]](MutableMap[String, Room]())
+  val roomPool = new AtomicReference[MutableMap[String, Room]](MutableMap[String, Room]())
 
 }

@@ -2,8 +2,7 @@ package controllers
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import akka.stream.scaladsl.Source
-import akka.stream.scaladsl.{ Flow, Keep }
+import akka.stream.scaladsl.{ Flow, Keep, Source }
 import javax.inject._
 import play.api._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
@@ -26,9 +25,9 @@ class ChatController @Inject() (implicit system: ActorSystem, materializer: Mate
     
     val room = roomClient.chatRoom(roomId)
     
-    val userInput: Flow[JsValue, Message, _] = ActorFlow.actorRef[JsValue, Message](out => RequestActor.props(out))
+    val userInput = ActorFlow.actorRef[JsValue, Message](RequestActor.props)
     
-    val userOutPut: Flow[Message, JsValue, _] = ActorFlow.actorRef[Message, JsValue](out => ResponseActor.props(out))
+    val userOutPut = ActorFlow.actorRef[Message, JsValue](ResponseActor.props)
     
     userInput.viaMat(room.bus)(Keep.right).viaMat(userOutPut)(Keep.right)
 

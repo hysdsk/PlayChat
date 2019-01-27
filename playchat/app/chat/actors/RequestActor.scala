@@ -15,13 +15,9 @@ class RequestActor(out: ActorRef) extends Actor {
     }
   }
 
-  override def preStart(): Unit = {
-    out ! Join("")
-  }
+  override def preStart() = println(s"Start ${out.path}")
 
-  override def postStop(): Unit = {
-    out ! PoisonPill
-  }
+  override def postStop() = println(s"Stop ${out.path}")
   
 }
 
